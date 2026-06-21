@@ -1,0 +1,15 @@
+<template>
+<div class="page-section"><div class="home-card"><div class="card-header"><span class="card-title"><span class="title-dot"></span>规范文件</span><el-button type="primary" size="small" round @click="openAdd">新增</el-button></div><div class="card-body"><el-table :data="items" size="small" stripe empty-text="暂无数据"><el-table-column prop="name" label="名称" min-width="260"/><el-table-column prop="date" label="日期" width="120"/><el-table-column label="操作" width="260" fixed="right"><template #default="scope"><span class="btn-row"><el-button text type="primary" size="small" @click="viewDetail(scope.row)">详情</el-button><el-button text type="warning" size="small" @click="editRow(scope.row)">编辑</el-button><el-button text type="danger" size="small" @click="deleteRow(scope.row)">删除</el-button><el-button text type="success" size="small" @click="doPrint(scope.row)">打印</el-button></span></template></el-table-column></el-table>
+<el-dialog v-model="dlg.show" :title="dlg.title" width="620px"><el-descriptions v-if="dlg.mode==='view'" :column="2" border size="small"><el-descriptions-item label="名称"><span>{{dlg.row.name||'-'}}</span></el-descriptions-item><el-descriptions-item label="日期"><span>{{dlg.row.date||'-'}}</span></el-descriptions-item></el-descriptions><el-form v-else :model="dlg.row" label-width="90px"><el-form-item label="名称"><el-input v-model="dlg.row.name"/></el-form-item><el-form-item label="日期"><el-input v-model="dlg.row.date"/></el-form-item></el-form><template #footer><span v-if="dlg.mode==='view'"><el-button type="warning" @click="dlg.mode='edit'">编辑</el-button><el-button type="success" @click="doPrint(dlg.row)">打印</el-button><el-button @click="dlg.show=false">关闭</el-button></span><span v-else><el-button @click="dlg.mode='view'">取消</el-button><el-button type="primary" @click="saveEdit">保存</el-button></span></template></el-dialog></div></div></div></template>
+<script setup lang="ts">
+import {ref,reactive} from 'vue';import {ElMessage,ElMessageBox} from 'element-plus';import {usePrint} from '@/composables/usePrint'
+const {doPrint}=usePrint()
+const items=ref([{id:1,name:"示例数据一",date:"2026-06-15"},{id:2,name:"示例数据二",date:"2026-06-10"}]);
+const dlg=reactive({show:false,title:'',mode:'view',row:{} as any})
+function viewDetail(row:any){dlg.row={...row};dlg.title='详情';dlg.mode='view';dlg.show=true}
+function editRow(row:any){dlg.row={...row};dlg.title='编辑';dlg.mode='edit';dlg.show=true}
+function openAdd(){dlg.row={id:Date.now(),name:"",date:new Date().toISOString().split("T")[0]};dlg.title='新增';dlg.mode='edit';dlg.show=true}
+function saveEdit(){const idx=items.value.findIndex((r:any)=>r.id===dlg.row.id);if(idx>=0)items.value[idx]=dlg.row;else items.value.unshift(dlg.row);dlg.show=false;ElMessage.success('保存成功')}
+function deleteRow(row:any){ElMessageBox.confirm('确认删除？','确认',{type:'warning'}).then(()=>{items.value=items.value.filter((r:any)=>r.id!==row.id);ElMessage.success('已删除')})}
+</script>
+<style scoped>.page-section{max-width:1200px}.btn-row{display:inline-flex;align-items:center;gap:1px;white-space:nowrap}</style>
