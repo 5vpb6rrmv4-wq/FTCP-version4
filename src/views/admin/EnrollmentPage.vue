@@ -1,0 +1,18 @@
+<template>
+<div class="page-section"><div class="home-card"><div class="card-header"><span class="card-title"><span class="title-dot"></span>招生管理</span><el-button type="primary" size="small" round @click="openAdd">新增</el-button></div><div class="card-body"><el-table :data="rows" size="small" stripe empty-text="暂无数据"><el-table-column prop="name" label="专业名称" min-width="160"/><el-table-column prop="dir" label="研究方向" min-width="160"/><el-table-column prop="advisor" label="导师" width="100"/><el-table-column prop="quota" label="招生人数" width="80"/><el-table-column prop="exam" label="考试科目" min-width="180"/><el-table-column label="操作" width="260" fixed="right"><template #default="scope"><span class="btn-row"><el-button text type="primary" size="small" @click="viewDetail(scope.row)">详情</el-button><el-button text type="warning" size="small" @click="editRow(scope.row)">编辑</el-button><el-button text type="danger" size="small" @click="deleteRow(scope.row)">删除</el-button><el-button text type="success" size="small" @click="doPrint(scope.row)">打印</el-button></span></template></el-table-column></el-table>
+<el-dialog v-model="dlg.show" :title="dlg.title" width="620px"><el-descriptions v-if="dlg.mode==='view'" :column="2" border size="small"><el-descriptions-item v-for="f in dlgFields" :key="f.key" :label="f.label"><span>{{dlg.row[f.key]||'-'}}</span></el-descriptions-item></el-descriptions><el-form v-else :model="dlg.row" label-width="90px"><el-form-item v-for="f in dlgFields" :key="f.key" :label="f.label"><el-input v-model="dlg.row[f.key]"/></el-form-item></el-form><template #footer><span v-if="dlg.mode==='view'"><el-button type="warning" @click="dlg.mode='edit'">编辑</el-button><el-button type="success" @click="doPrint(dlg.row)">打印</el-button><el-button @click="dlg.show=false">关闭</el-button></span><span v-else><el-button @click="dlg.mode='view'">取消</el-button><el-button type="primary" @click="saveEdit">保存</el-button></span></template></el-dialog></div></div></div></template>
+<script setup lang="ts">
+import {ref,reactive} from 'vue';import {ElMessage,ElMessageBox} from 'element-plus';import {usePrint} from '@/composables/usePrint'
+const {doPrint}=usePrint()
+const dlgFields=[{key:"name",label:"专业名称"},{key:"dir",label:"研究方向"},{key:"advisor",label:"导师"},{key:"quota",label:"招生人数"},{key:"exam",label:"考试科目"}];
+const rows=ref([{name:"计算机科学与技术",dir:"人工智能",advisor:"李教授",quota:5,exam:"政治/英语/数学/专业课"},
+{name:"计算机科学与技术",dir:"数据科学",advisor:"王教授",quota:3,exam:"政治/英语/数学/专业课"},
+{name:"电子信息",dir:"计算机技术",advisor:"张教授",quota:8,exam:"政治/英语/数学/专业课"}]);
+const dlg=reactive({show:false,title:'',mode:'view',row:{} as any})
+function viewDetail(row:any){dlg.row={...row};dlg.title='详情';dlg.mode='view';dlg.show=true}
+function editRow(row:any){dlg.row={...row};dlg.title='编辑';dlg.mode='edit';dlg.show=true}
+function openAdd(){dlg.row={id:Date.now(),name:"",dir:"",advisor:"",quota:0,exam:""};dlg.title='新增';dlg.mode='edit';dlg.show=true}
+function saveEdit(){const idx=rows.value.findIndex((r:any)=>r.id===dlg.row.id);if(idx>=0)rows.value[idx]=dlg.row;else rows.value.unshift(dlg.row);dlg.show=false;ElMessage.success('保存成功')}
+function deleteRow(row:any){ElMessageBox.confirm('确认删除？','确认',{type:'warning'}).then(()=>{rows.value=rows.value.filter((r:any)=>r.id!==row.id);ElMessage.success('已删除')})}
+</script>
+<style scoped>.page-section{max-width:1200px}.btn-row{display:inline-flex;align-items:center;gap:1px;white-space:nowrap}</style>
