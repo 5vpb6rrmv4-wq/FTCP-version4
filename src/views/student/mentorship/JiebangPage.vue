@@ -1,18 +1,19 @@
 <template>
-  <div class="page-section">
-    <div class="home-card"><div class="card-header"><span class="card-title"><span class="title-dot"></span>揭榜挂帅</span></div>
-      <div class="card-body">
-        <el-table :data="items" size="small" stripe>
-          <el-table-column prop="name" label="名称" min-width="260"/>
-          <el-table-column prop="date" label="日期" width="120"/>
-          <el-table-column label="操作" width="100"><template #default><el-button text type="primary" size="small">查看</el-button></template></el-table-column>
-        </el-table>
-      </div>
-    </div>
-  </div>
-</template>
+<div class="page-section"><div class="home-card"><div class="card-header"><span class="card-title"><span class="title-dot"></span>揭榜挂帅</span></div><div class="card-body"><el-tabs type="border-card">
+<el-tab-pane label="揭榜任务"><el-table :data="tasks" size="small" stripe empty-text="暂无任务"><el-table-column prop="title" label="任务名称" min-width="260"/><el-table-column prop="cat" label="类别" width="120"><template #default="{row}"><el-tag size="small" round>{{row.cat}}</el-tag></template></el-table-column><el-table-column prop="pub" label="发布方" width="150"/><el-table-column prop="deadline" label="截止" width="110"/><el-table-column label="状态" width="100"><template #default="{row}"><el-tag :type="row.status==='进行中'?'success':row.status==='招募中'?'warning':'info'" size="small" round>{{row.status}}</el-tag></template></el-table-column><el-table-column label="操作" width="160" fixed="right"><template #default="{row}"><span class="btn-row"><el-button text type="primary" size="small" @click="view(row)">详情</el-button><el-button v-if="row.status==='招募中'" type="primary" size="small" round @click="row.status='进行中'">揭榜</el-button><el-button text type="success" size="small" @click="doPrint(row)">打印</el-button></span></template></el-table-column></el-table></el-tab-pane>
+<el-tab-pane label="汇众力闯新途"><el-table :data="collabs" size="small" stripe empty-text="暂无协作"><el-table-column prop="title" label="项目名称" min-width="220"/><el-table-column prop="team" label="协作团队" width="160"/><el-table-column prop="role" label="本人角色" width="110"/><el-table-column label="进度" width="150"><template #default="{row}"><el-progress :percentage="row.pct" :stroke-width="12"/></template></el-table-column><el-table-column label="操作" width="80"><template #default><el-button text type="primary" size="small">查看</el-button></template></el-table-column></el-table></el-tab-pane>
+<el-tab-pane label="全程纪实留痕"><div class="timeline-box"><el-timeline><el-timeline-item v-for="(r,i) in records" :key="i" :timestamp="r.date" :type="r.type" placement="top"><el-card shadow="hover" size="small"><h4>{{r.title}}</h4><p style="color:#64748b;font-size:12px;margin-top:4px">{{r.content}}</p></el-card></el-timeline-item></el-timeline></div></el-tab-pane>
+</el-tabs>
+
+<el-dialog v-model="dlg.show" :title="dlg.title" width="620px"><el-descriptions v-if="dlg.mode==='view'" :column="2" border size="small"><el-descriptions-item label="任务名称" :span="2">{{dlg.row.title}}</el-descriptions-item><el-descriptions-item label="类别">{{dlg.row.cat}}</el-descriptions-item><el-descriptions-item label="发布方">{{dlg.row.pub}}</el-descriptions-item><el-descriptions-item label="截止日期">{{dlg.row.deadline}}</el-descriptions-item><el-descriptions-item label="状态">{{dlg.row.status}}</el-descriptions-item></el-descriptions><template #footer><el-button type="success" @click="doPrint(dlg.row)">打印</el-button><el-button @click="dlg.show=false">关闭</el-button></template></el-dialog>
+</div></div></div></template>
 <script setup lang="ts">
-import { ref } from 'vue'
-const items=ref([{name:'示例数据一',date:'2026-06-15'},{name:'示例数据二',date:'2026-06-10'}])
+import {ref,reactive} from 'vue';import {usePrint} from '@/composables/usePrint'
+const {doPrint}=usePrint()
+const tasks=ref([{title:'智能交通流量预测模型研究',cat:'科研攻关',pub:'科技处',deadline:'2026-07-01',status:'招募中'},{title:'基于联邦学习的隐私保护方案',cat:'技术创新',pub:'信息安全中心',deadline:'2026-06-30',status:'进行中'},{title:'大规模知识图谱构建与应用',cat:'科研攻关',pub:'知识工程实验室',deadline:'2026-07-15',status:'进行中'},{title:'边缘计算资源调度优化',cat:'技术创新',pub:'云计算中心',deadline:'2026-05-20',status:'已完成'},{title:'多模态数据融合分析方法',cat:'方法研究',pub:'数据科学实验室',deadline:'2026-06-10',status:'进行中'}])
+const collabs=ref([{title:'多模态数据融合分析',team:'数据科学团队',role:'核心成员',pct:65}])
+const records=ref([{date:'2026-06-10',title:'中期检查汇报',content:'完成数据预处理模块和模型初步训练，准确率达85%',type:'primary'},{date:'2026-05-15',title:'技术方案评审',content:'通过技术方案评审，确定采用FedAvg算法',type:'success'},{date:'2026-04-01',title:'项目启动',content:'正式揭榜，组建项目团队',type:'warning'}])
+const dlg=reactive({show:false,title:'',mode:'view',row:{} as any})
+function view(row:any){dlg.row={...row};dlg.title='任务详情';dlg.mode='view';dlg.show=true}
 </script>
-<style scoped>.page-section{max-width:1000px}</style>
+<style scoped>.page-section{max-width:1200px}.btn-row{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}.timeline-box{padding:10px 0}</style>
